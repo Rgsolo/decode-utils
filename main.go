@@ -43,19 +43,18 @@ func main() {
 		panic(err)
 	}
 	result, _ := t.MarshalJSON()
-	// ############################ 🤡input ############################### \n
 	fmt.Println()
 	fmt.Println("############################ 🤡result ###############################")
 	fmt.Println(string(result))
 	fmt.Println()
-	fmt.Println("🤡nonce: ", t.Nonce())
-	fmt.Println("🤡hash: ", t.Hash())
-	fmt.Println("🤡gasLimit: ", t.Gas())
+	fmt.Println("🌱nonce: ", t.Nonce())
+	fmt.Println("🌱hash: ", t.Hash())
+	fmt.Println("🌱gasLimit: ", t.Gas())
 	if t.Type() == types.LegacyTxType {
-		fmt.Println("🤡gasPrice: ", t.GasPrice().String())
+		fmt.Println("🌱gasPrice: ", t.GasPrice().String())
 	} else {
-		fmt.Println("🤡maxPriorityFeePerGas: ", t.GasTipCap().String())
-		fmt.Println("🤡maxPriorityFeePerGas: ", t.GasFeeCap().String())
+		fmt.Println("🌱maxPriorityFeePerGas: ", t.GasTipCap().String())
+		fmt.Println("🌱maxPriorityFeePerGas: ", t.GasFeeCap().String())
 	}
 
 	sender, err := types.NewEIP155Signer(big.NewInt(int64(chainId))).Sender(t)
@@ -63,7 +62,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("🤡sender: ", sender.Hex())
-
+	fmt.Println()
 	data, err := token.ParseCallData(t.Data(), token.Erc20)
 	if err != nil {
 		data, err = token.ParseCallData(t.Data(), token.Erc721)
