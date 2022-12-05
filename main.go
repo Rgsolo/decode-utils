@@ -1,6 +1,7 @@
 package main
 
 import (
+	"decode-utils/token"
 	"flag"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -62,4 +63,24 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("🤡sender: ", sender.Hex())
+
+	data, err := token.ParseCallData(t.Data(), token.Erc20)
+	if err != nil {
+		data, err = token.ParseCallData(t.Data(), token.Erc721)
+		if err != nil {
+			data, err = token.ParseCallData(t.Data(), token.Erc1155)
+			if err != nil {
+				fmt.Println("🙁not support contract")
+			} else {
+				fmt.Printf("😋erc1155: %s \n", data.Signature)
+			}
+		} else {
+			fmt.Printf("😋erc721: %s \n", data.Signature)
+		}
+	} else {
+		fmt.Printf("😋erc20: %s \n", data.Signature)
+	}
+	for _, input := range data.Inputs {
+		fmt.Printf("🌱%s[%s]: %s \n", input.SolType.Name, input.SolType.Type, input.Value)
+	}
 }
