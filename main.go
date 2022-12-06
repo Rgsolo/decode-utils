@@ -51,9 +51,10 @@ func main() {
 		fmt.Println("🌱maxFeePerGas: ", transaction.GasFeeCap().String())
 	}
 	fmt.Println("🌱fee: ", fee)
-	fmt.Println()
 	value := decimal.NewFromBigInt(transaction.Value(), -18)
 	fmt.Printf("🌱value: %s\n", value)
+	fmt.Println()
+
 	if len(transaction.Data()) != 0 {
 		data, err := token.ParseCallData(transaction.Data(), token.Erc20)
 		if err != nil {
