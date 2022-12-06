@@ -57,12 +57,6 @@ func main() {
 		fmt.Println("🌱maxPriorityFeePerGas: ", t.GasFeeCap().String())
 	}
 
-	sender, err := types.NewEIP155Signer(big.NewInt(int64(chainId))).Sender(t)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println()
-	fmt.Println("🤡sender: ", sender.Hex())
 	fmt.Println()
 	data, err := token.ParseCallData(t.Data(), token.Erc20)
 	if err != nil {
@@ -83,4 +77,11 @@ func main() {
 	for _, input := range data.Inputs {
 		fmt.Printf("🌱%s[%s]: %s \n", input.SolType.Name, input.SolType.Type, input.Value)
 	}
+
+	sender, err := types.NewEIP155Signer(big.NewInt(int64(chainId))).Sender(t)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println()
+	fmt.Println("🤡sender: ", sender.Hex())
 }
