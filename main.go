@@ -1,6 +1,7 @@
 package main
 
 import (
+	"decode-utils/svc"
 	"decode-utils/token"
 	"flag"
 	"fmt"
@@ -8,7 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 
 	"math/big"
-	"strings"
 )
 
 func main() {
@@ -20,49 +20,38 @@ func main() {
 		return
 	}
 
-	var chainId int
-	switch strings.ToLower(args[0]) {
-	case "eth":
-		chainId = eth
-	case "bsc":
-		chainId = bsc
-	case "polygon":
-		chainId = polygon
-	default:
-		fmt.Println("🙁not support chain")
-		return
-	}
+	svcCtx := svc.NewServiceContext(args[0])
 
 	decode, err := hexutil.Decode(args[1])
 	if err != nil {
 		panic(err)
 	}
-	t := new(types.Transaction)
-	err = t.UnmarshalBinary(decode)
+	transaction := new(types.Transaction)
+	err = transaction.UnmarshalBinary(decode)
 	if err != nil {
 		panic(err)
 	}
-	result, _ := t.MarshalJSON()
+	result, _ := transaction.MarshalJSON()
 	fmt.Println()
 	fmt.Println("############################ 🤡result ###############################")
 	fmt.Println(string(result))
 	fmt.Println()
-	fmt.Println("🌱nonce: ", t.Nonce())
-	fmt.Println("🌱hash: ", t.Hash())
-	fmt.Println("🌱gasLimit: ", t.Gas())
-	if t.Type() == types.LegacyTxType {
-		fmt.Println("🌱gasPrice: ", t.GasPrice().String())
+	fmt.Println("🌱nonce: ", transaction.Nonce())
+	fmt.Println("🌱hash: ", transaction.Hash())
+	fmt.Println("🌱gasLimit: ", transaction.Gas())
+	if transaction.Type() == types.LegacyTxType {
+		fmt.Println("🌱gasPrice: ", transaction.GasPrice().String())
 	} else {
-		fmt.Println("🌱maxPriorityFeePerGas: ", t.GasTipCap().String())
-		fmt.Println("🌱maxPriorityFeePerGas: ", t.GasFeeCap().String())
+		fmt.Println("🌱maxPriorityFeePerGas: ", transaction.GasTipCap().String())
+		fmt.Println("🌱maxPriorityFeePerGas: ", transaction.GasFeeCap().String())
 	}
 
 	fmt.Println()
-	data, err := token.ParseCallData(t.Data(), token.Erc20)
+	data, err := token.ParseCallData(transaction.Data(), token.Erc20)
 	if err != nil {
-		data, err = token.ParseCallData(t.Data(), token.Erc721)
+		data, err = token.ParseCallData(transaction.Data(), token.Erc721)
 		if err != nil {
-			data, err = token.ParseCallData(t.Data(), token.Erc1155)
+			data, err = token.ParseCallData(transaction.Data(), token.Erc1155)
 			if err != nil {
 				fmt.Println("🙁not support contract")
 			} else {
@@ -78,10 +67,16 @@ func main() {
 		fmt.Printf("🌱%s[%s]: %s \n", input.SolType.Name, input.SolType.Type, input.Value)
 	}
 
-	sender, err := types.NewEIP155Signer(big.NewInt(int64(chainId))).Sender(t)
+	sender, err := types.NewEIP155Signer(big.NewInt(svcCtx.ChainID)).Sender(transaction)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println()
 	fmt.Println("🤡sender: ", sender.Hex())
+
+	nonce, err := svcCtx.RpcClient.GetNonce(sender)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("🤡next nonce : %d\n", nonce)
 }
