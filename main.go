@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"decode-utils/svc"
 	"decode-utils/token"
 	"flag"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-
+	"github.com/shopspring/decimal"
 	"math/big"
 )
 
@@ -38,33 +39,41 @@ func main() {
 	fmt.Println()
 	fmt.Println("🌱nonce: ", transaction.Nonce())
 	fmt.Println("🌱hash: ", transaction.Hash())
-	fmt.Println("🌱gasLimit: ", transaction.Gas())
+	gasLimit := decimal.NewFromInt(int64(transaction.Gas()))
+	fmt.Println("🌱gasLimit: ", gasLimit)
+	fee := decimal.Zero
 	if transaction.Type() == types.LegacyTxType {
 		fmt.Println("🌱gasPrice: ", transaction.GasPrice().String())
+		fee = decimal.NewFromBigInt(transaction.GasPrice(), -18).Mul(gasLimit)
 	} else {
+		fee = decimal.NewFromBigInt(transaction.GasFeeCap(), -18).Mul(gasLimit)
 		fmt.Println("🌱maxPriorityFeePerGas: ", transaction.GasTipCap().String())
-		fmt.Println("🌱maxPriorityFeePerGas: ", transaction.GasFeeCap().String())
+		fmt.Println("🌱maxFeePerGas: ", transaction.GasFeeCap().String())
 	}
-
+	fmt.Println("🌱fee: ", fee)
 	fmt.Println()
-	data, err := token.ParseCallData(transaction.Data(), token.Erc20)
-	if err != nil {
-		data, err = token.ParseCallData(transaction.Data(), token.Erc721)
+	value := decimal.NewFromBigInt(transaction.Value(), -18)
+	fmt.Printf("🌱value: %s\n", value)
+	if len(transaction.Data()) != 0 {
+		data, err := token.ParseCallData(transaction.Data(), token.Erc20)
 		if err != nil {
-			data, err = token.ParseCallData(transaction.Data(), token.Erc1155)
+			data, err = token.ParseCallData(transaction.Data(), token.Erc721)
 			if err != nil {
-				fmt.Println("🙁not support contract")
+				data, err = token.ParseCallData(transaction.Data(), token.Erc1155)
+				if err != nil {
+					fmt.Println("🙁not support contract")
+				} else {
+					fmt.Printf("erc1155: %s \n", data.Signature)
+				}
 			} else {
-				fmt.Printf("erc1155: %s \n", data.Signature)
+				fmt.Printf("erc721: %s \n", data.Signature)
 			}
 		} else {
-			fmt.Printf("erc721: %s \n", data.Signature)
+			fmt.Printf("erc20: %s \n", data.Signature)
 		}
-	} else {
-		fmt.Printf("erc20: %s \n", data.Signature)
-	}
-	for _, input := range data.Inputs {
-		fmt.Printf("🌱%s[%s]: %s \n", input.SolType.Name, input.SolType.Type, input.Value)
+		for _, input := range data.Inputs {
+			fmt.Printf("🌱%s[%s]: %s \n", input.SolType.Name, input.SolType.Type, input.Value)
+		}
 	}
 
 	sender, err := types.NewEIP155Signer(big.NewInt(svcCtx.ChainID)).Sender(transaction)
@@ -79,4 +88,17 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("🤡next nonce : %d\n", nonce)
+
+	balanceAt, err := svcCtx.RpcClient.Client.BalanceAt(context.Background(), sender, nil)
+	if err != nil {
+		panic(err)
+	}
+	balance := decimal.NewFromBigInt(balanceAt, -18)
+	fmt.Printf("🤡balance : %s\n", balance.String())
+
+	if balance.Cmp(fee.Add(value)) >= 0 {
+		fmt.Printf("🤡balance is enough\n")
+	} else {
+		fmt.Printf("🤡balance is not enough: %s\n", balance.Sub(fee.Add(value)))
+	}
 }
