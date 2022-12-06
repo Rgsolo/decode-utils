@@ -61,6 +61,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println()
 	fmt.Println("🤡sender: ", sender.Hex())
 	fmt.Println()
 	data, err := token.ParseCallData(t.Data(), token.Erc20)
@@ -71,13 +72,13 @@ func main() {
 			if err != nil {
 				fmt.Println("🙁not support contract")
 			} else {
-				fmt.Printf("😋erc1155: %s \n", data.Signature)
+				fmt.Printf("erc1155: %s \n", data.Signature)
 			}
 		} else {
-			fmt.Printf("😋erc721: %s \n", data.Signature)
+			fmt.Printf("erc721: %s \n", data.Signature)
 		}
 	} else {
-		fmt.Printf("😋erc20: %s \n", data.Signature)
+		fmt.Printf("erc20: %s \n", data.Signature)
 	}
 	for _, input := range data.Inputs {
 		fmt.Printf("🌱%s[%s]: %s \n", input.SolType.Name, input.SolType.Type, input.Value)
