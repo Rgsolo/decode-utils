@@ -37,7 +37,7 @@ func main() {
 	fmt.Println("############################ 🤡result ###############################")
 	fmt.Println(string(result))
 	fmt.Println()
-	fmt.Println("🌱nonce: ", transaction.Nonce())
+	fmt.Println("🌱nextNonce: ", transaction.Nonce())
 	fmt.Println("🌱hash: ", transaction.Hash())
 	gasLimit := decimal.NewFromInt(int64(transaction.Gas()))
 	fmt.Println("🌱gasLimit: ", gasLimit)
@@ -84,11 +84,11 @@ func main() {
 	fmt.Println()
 	fmt.Println("🤡sender: ", sender.Hex())
 
-	nonce, err := svcCtx.RpcClient.GetNonce(sender)
+	nextNonce, err := svcCtx.RpcClient.GetNonce(sender)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("🤡next nonce : %d\n", nonce)
+	fmt.Printf("🤡next nextNonce : %d\n", nextNonce)
 
 	balanceAt, err := svcCtx.RpcClient.Client.BalanceAt(context.Background(), sender, nil)
 	if err != nil {
@@ -98,8 +98,8 @@ func main() {
 	fmt.Printf("🤡balance : %s\n", balance.String())
 
 	if balance.Cmp(fee.Add(value)) >= 0 {
-		fmt.Printf("🤡balance is enough\n")
+		fmt.Print("♓ balance is enough~ \n")
 	} else {
-		fmt.Printf("🤡balance is not enough: %s\n", balance.Sub(fee.Add(value)))
+		fmt.Printf("♓ balance is not enough: %s\n", balance.Sub(fee.Add(value)))
 	}
 }
