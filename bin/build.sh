@@ -1,2 +1,3 @@
-go build -o build/dec ../
-cp build/dec ../../../bin/
+go build -o build/decode ../
+cp build/decode ../../../bin/
+

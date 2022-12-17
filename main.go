@@ -6,6 +6,7 @@ import (
 	"decode-utils/token"
 	"flag"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/shopspring/decimal"
@@ -37,18 +38,30 @@ func main() {
 	fmt.Println("############################ 🤡result ###############################")
 	fmt.Println(string(result))
 	fmt.Println()
-	fmt.Println("🌱nextNonce: ", transaction.Nonce())
+	fmt.Println("############################ 🤡transaction details###############################")
+	fmt.Println("🌱nonce: ", transaction.Nonce())
 	fmt.Println("🌱hash: ", transaction.Hash())
 	gasLimit := decimal.NewFromInt(int64(transaction.Gas()))
 	fmt.Println("🌱gasLimit: ", gasLimit)
 	fee := decimal.Zero
+	var sender common.Address
 	if transaction.Type() == types.LegacyTxType {
 		fmt.Println("🌱gasPrice: ", transaction.GasPrice().String())
 		fee = decimal.NewFromBigInt(transaction.GasPrice(), -18).Mul(gasLimit)
+
+		sender, err = types.NewEIP155Signer(big.NewInt(svcCtx.ChainID)).Sender(transaction)
+		if err != nil {
+			panic(err)
+		}
 	} else {
 		fee = decimal.NewFromBigInt(transaction.GasFeeCap(), -18).Mul(gasLimit)
 		fmt.Println("🌱maxPriorityFeePerGas: ", transaction.GasTipCap().String())
 		fmt.Println("🌱maxFeePerGas: ", transaction.GasFeeCap().String())
+
+		sender, err = types.NewLondonSigner(big.NewInt(svcCtx.ChainID)).Sender(transaction)
+		if err != nil {
+			panic(err)
+		}
 	}
 	fmt.Println("🌱fee: ", fee)
 	value := decimal.NewFromBigInt(transaction.Value(), -18)
@@ -77,18 +90,15 @@ func main() {
 		}
 	}
 
-	sender, err := types.NewEIP155Signer(big.NewInt(svcCtx.ChainID)).Sender(transaction)
-	if err != nil {
-		panic(err)
-	}
 	fmt.Println()
-	fmt.Println("🤡sender: ", sender.Hex())
+	fmt.Println("############################ 🤡sender information###############################")
 
+	fmt.Println("🤡sender: ", sender.Hex())
 	nextNonce, err := svcCtx.RpcClient.GetNonce(sender)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("🤡next nextNonce : %d\n", nextNonce)
+	fmt.Printf("🤡next nonce : %d\n", nextNonce)
 
 	balanceAt, err := svcCtx.RpcClient.Client.BalanceAt(context.Background(), sender, nil)
 	if err != nil {
