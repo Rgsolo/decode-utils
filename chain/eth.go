@@ -50,7 +50,7 @@ func (c *EthClient) GetNonce(address common.Address) (uint64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()
 
-	nonce, err := c.Client.PendingNonceAt(ctx, address)
+	nonce, err := c.Client.NonceAt(ctx, address, nil)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to retrieve account nonce")
 	}

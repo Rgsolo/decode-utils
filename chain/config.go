@@ -55,6 +55,18 @@ var (
 		ChainID: 1370,
 		RpcURL:  "https://blockchain.ramestta.com",
 	}
+	FLR = Config{
+		ChainID: 14,
+		RpcURL:  "https://flare-api.flare.network/ext/C/rpc",
+	}
+	APEX = Config{
+		ChainID: 1501795822,
+		RpcURL:  "https://rpc.theapexchain.org",
+	}
+	GODE = Config{
+		ChainID: 5500,
+		RpcURL:  "https://rpc.godechain.net",
+	}
 )
 
 func NewConfig(name string) *Config {
@@ -82,7 +94,12 @@ func NewConfig(name string) *Config {
 		c = Astar
 	case "rama":
 		c = Rama
-
+	case "flr":
+		c = FLR
+	case "apex", "omnia":
+		c = APEX
+	case "gode":
+		c = GODE
 	default:
 		panic("🙁not support chain")
 	}
