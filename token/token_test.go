@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"log"
+	"net"
+	"net/rpc"
 	"testing"
 )
 
@@ -32,4 +35,33 @@ func TestAbi(t *testing.T) {
 	fmt.Println(json.Events["Transfer"].ID.String())
 
 	fmt.Println(Erc721.Events["Transfer"].ID.String())
+}
+
+func TestName(t *testing.T) {
+	client, err := rpc.Dial("tcp", "10.95.2.48:8001")
+	if err != nil {
+		log.Fatal("dialing:", err)
+	}
+
+	var reply string
+	err = client.Call("chain.getChainInfo", nil, &reply)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(reply)
+}
+
+func Test1(t *testing.T) {
+	_, err := net.Dial("tcp", "10.95.2.48:8001")
+	if err != nil {
+		log.Fatal("dialing:", err)
+	}
+	//var reply string
+	//err = conn.Write("chain.getChainInfo", nil, &reply)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+
+	//fmt.Println(reply)
 }

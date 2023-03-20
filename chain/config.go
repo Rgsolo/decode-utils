@@ -67,6 +67,10 @@ var (
 		ChainID: 5500,
 		RpcURL:  "https://rpc.godechain.net",
 	}
+	CMP = Config{
+		ChainID: 256256,
+		RpcURL:  "https://mainnet.block.caduceus.foundation",
+	}
 )
 
 func NewConfig(name string) *Config {
@@ -100,6 +104,8 @@ func NewConfig(name string) *Config {
 		c = APEX
 	case "gode":
 		c = GODE
+	case "cmp":
+		c = CMP
 	default:
 		panic("🙁not support chain")
 	}
