@@ -38,7 +38,7 @@ func main() {
 	fmt.Println("############################ 🤡result ###############################")
 	fmt.Println(string(result))
 	fmt.Println()
-	fmt.Println("############################ 🤡transaction details###############################")
+	fmt.Println("############################ 🤡transaction details ###############################")
 	fmt.Println("🌱nonce: ", transaction.Nonce())
 	fmt.Println("🌱hash: ", transaction.Hash())
 	gasLimit := decimal.NewFromInt(int64(transaction.Gas()))
@@ -91,7 +91,7 @@ func main() {
 	}
 
 	fmt.Println()
-	fmt.Println("############################ 🤡sender information###############################")
+	fmt.Println("############################ 🤡sender information ###############################")
 
 	fmt.Println("🤡sender: ", sender.Hex())
 	nextNonce, err := svcCtx.RpcClient.GetNonce(sender)
