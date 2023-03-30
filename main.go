@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"decode-utils/svc"
+	"decode-utils/chain"
 	"decode-utils/token"
 	"flag"
 	"fmt"
@@ -38,11 +38,7 @@ func main() {
 		panic(err)
 	}
 
-	svcCtx := svc.NewServiceContext(transaction.ChainId().Int64())
-	if svcCtx == nil {
-		fmt.Println("🙁err svcCtx")
-		return
-	}
+	getChain := chain.GetChain(transaction.ChainId().Int64())
 
 	result, _ := transaction.MarshalJSON()
 	fmt.Println()
@@ -50,7 +46,9 @@ func main() {
 	fmt.Println(string(result))
 	fmt.Println()
 	fmt.Println("############################ 🤡transaction details ###############################")
-	fmt.Println("🌱chain : ", svcCtx.ChainName)
+	fmt.Println("🌱chain name: ", getChain.Name)
+	fmt.Println("🌱chain id: ", getChain.ChainID)
+	fmt.Println("🌱chain rpc url: ", getChain.RpcURL[0])
 	fmt.Println("🌱nonce: ", transaction.Nonce())
 	fmt.Println("🌱hash: ", transaction.Hash())
 	gasLimit := decimal.NewFromInt(int64(transaction.Gas()))
@@ -61,7 +59,7 @@ func main() {
 		fmt.Println("🌱gasPrice: ", transaction.GasPrice().String())
 		fee = decimal.NewFromBigInt(transaction.GasPrice(), -18).Mul(gasLimit)
 
-		sender, err = types.NewEIP155Signer(big.NewInt(svcCtx.ChainID)).Sender(transaction)
+		sender, err = types.NewEIP155Signer(big.NewInt(getChain.ChainID)).Sender(transaction)
 		if err != nil {
 			panic(err)
 		}
@@ -70,7 +68,7 @@ func main() {
 		fmt.Println("🌱maxPriorityFeePerGas: ", transaction.GasTipCap().String())
 		fmt.Println("🌱maxFeePerGas: ", transaction.GasFeeCap().String())
 
-		sender, err = types.NewLondonSigner(big.NewInt(svcCtx.ChainID)).Sender(transaction)
+		sender, err = types.NewLondonSigner(big.NewInt(getChain.ChainID)).Sender(transaction)
 		if err != nil {
 			panic(err)
 		}
@@ -106,13 +104,15 @@ func main() {
 	fmt.Println("############################ 🤡sender information ###############################")
 
 	fmt.Println("🤡sender: ", sender.Hex())
-	nextNonce, err := svcCtx.RpcClient.GetNonce(sender)
+
+	client := chain.NewClient(getChain.RpcURL[0])
+	nextNonce, err := client.GetNonce(sender)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("🤡next nonce : %d\n", nextNonce)
 
-	balanceAt, err := svcCtx.RpcClient.Client.BalanceAt(context.Background(), sender, nil)
+	balanceAt, err := client.Client.BalanceAt(context.Background(), sender, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -126,7 +126,7 @@ func main() {
 	}
 
 	if isSend {
-		err = svcCtx.RpcClient.SendTx(transaction)
+		err = client.SendTx(transaction)
 		if err != nil {
 			panic(err)
 		}
