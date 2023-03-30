@@ -13,15 +13,17 @@ type ServiceContext struct {
 	Erc1155   *abi.ABI
 	RpcClient *chain.EthClient
 	ChainID   int64
+	ChainName string
 }
 
-func NewServiceContext(chainName string) *ServiceContext {
-	config := chain.NewConfig(chainName)
+func NewServiceContext(chainId int64) *ServiceContext {
+	config := chain.GetConfigByChainID(chainId)
 	return &ServiceContext{
 		Erc20:     token.Erc20,
 		Erc721:    token.Erc721,
 		Erc1155:   token.Erc1155,
 		ChainID:   config.ChainID,
+		ChainName: config.ChainName,
 		RpcClient: chain.NewClient(config.RpcURL),
 	}
 }

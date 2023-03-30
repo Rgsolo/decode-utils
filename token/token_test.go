@@ -3,12 +3,13 @@ package token
 import (
 	"bytes"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 	"log"
 	"net"
 	"net/rpc"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 func TestToken(t *testing.T) {
@@ -33,6 +34,11 @@ func TestAbi(t *testing.T) {
 		return
 	}
 	fmt.Println(json.Events["Transfer"].ID.String())
+
+	fmt.Println(json.Methods["transferTokenOwnership"].Sig)
+	fmt.Println(json.Methods["transferTokenOwnership"].Name)
+	fmt.Println(json.Methods["transferTokenOwnership"].RawName)
+	fmt.Println(json.Methods["transferTokenOwnership"].)
 
 	fmt.Println(Erc721.Events["Transfer"].ID.String())
 }

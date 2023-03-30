@@ -6,25 +6,29 @@ import (
 	"decode-utils/token"
 	"flag"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/shopspring/decimal"
-	"math/big"
 )
 
 func main() {
+	// 解析命令行参数
 	flag.Parse()
 
 	args := flag.Args()
-	if len(args) != 2 {
-		fmt.Println("🙁err args")
-		return
+
+	isSend := false
+	var signedTx string
+	if args[0] == "send" {
+		isSend = true
+		signedTx = args[1]
+	} else {
+		signedTx = args[0]
 	}
-
-	svcCtx := svc.NewServiceContext(args[0])
-
-	decode, err := hexutil.Decode(args[1])
+	decode, err := hexutil.Decode(signedTx)
 	if err != nil {
 		panic(err)
 	}
@@ -33,12 +37,20 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	svcCtx := svc.NewServiceContext(transaction.ChainId().Int64())
+	if svcCtx == nil {
+		fmt.Println("🙁err svcCtx")
+		return
+	}
+
 	result, _ := transaction.MarshalJSON()
 	fmt.Println()
 	fmt.Println("############################ 🤡result ###############################")
 	fmt.Println(string(result))
 	fmt.Println()
 	fmt.Println("############################ 🤡transaction details ###############################")
+	fmt.Println("🌱chain : ", svcCtx.ChainName)
 	fmt.Println("🌱nonce: ", transaction.Nonce())
 	fmt.Println("🌱hash: ", transaction.Hash())
 	gasLimit := decimal.NewFromInt(int64(transaction.Gas()))
@@ -111,5 +123,13 @@ func main() {
 		fmt.Print("♓ balance is enough~ \n")
 	} else {
 		fmt.Printf("♓ balance is not enough: %s\n", balance.Sub(fee.Add(value)))
+	}
+
+	if isSend {
+		err = svcCtx.RpcClient.SendTx(transaction)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("🤡send success")
 	}
 }

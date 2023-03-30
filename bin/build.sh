@@ -1,3 +1,3 @@
 go build -o build/decode ../
-cp build/decode ../../../bin/
+mv build/decode ../../../bin/
 
